@@ -1,41 +1,17 @@
 pipeline {
-  agent none
+  agent any
   stages {
     stage('Back-end') {
-      agent {
-        docker { image 'maven:3.8.1-adoptopenjdk-11' }
-      }
       steps {
-        script {
-          // Create a simple Java Hello World application
-          writeFile file: 'HelloWorld.java', text: '''
-          public class HelloWorld {
-              public static void main(String[] args) {
-                  System.out.println("Hello, World from Java!");
-              }
-          }
-          '''
-
-          // Compile and run the Java application
-          sh 'javac HelloWorld.java'
-          sh 'java HelloWorld'
-        }
+        sh 'docker run -d --name backend-container maven:3.8.1-adoptopenjdk-11 tail -f /dev/null'
+        sh 'docker exec backend-container javac HelloWorld.java'
+        sh 'docker exec backend-container java HelloWorld'
       }
     }
     stage('Front-end') {
-      agent {
-        docker { image 'node:16-alpine' }
-      }
       steps {
-        script {
-          // Create a simple Node.js Hello World application
-          writeFile file: 'app.js', text: '''
-          console.log("Hello, World from Node.js!");
-          '''
-
-          // Execute the Node.js application
-          sh 'node app.js'
-        }
+        sh 'docker run -d --name frontend-container node:16-alpine tail -f /dev/null'
+        sh 'docker exec frontend-container node -e "console.log(\'Hello, World from Node.js!\')"'
       }
     }
   }
